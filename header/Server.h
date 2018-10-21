@@ -1,6 +1,8 @@
 #include <map>
-#include <string>
 #include "Node.h"
+#define MAXDATASIZE 1000
+#define MSPORT 15000 // master <---> slave
+#define CSPORT 15001 // client <---> server
 
 class Server : public Node <std::map<std::string, int>, std::string, std::string> {
 protected:
@@ -8,13 +10,13 @@ protected:
     size_t selfID;
     std::map<std::string, size_t> lockMap;
 
-    bool connectNode(std::string, std::size_t, std::string); // send (ID, lockname)
-    void daemon(size_t); // lesson ports
+    bool connectNode(std::string, std::string, lockpackage); // IP, PORT, package
+    // bool daemon(std::string); // Listen ports
 
 public:
     Server();
     size_t checkItem(std::string); // Lockname
-    void addItem(size_t, std::string); // UID lockname
-    void deleteItem(std::string); // lockname
-    void updateItem(size_t, std::string); // UID lockname
+    // void addItem(lockpackage); // UID lockname
+    void deleteItem(std::string); // Lockname
+    void updateItem(lockpackage); // UID lockname
 };
