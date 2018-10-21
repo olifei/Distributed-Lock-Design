@@ -10,15 +10,15 @@ Project 2: Distributed Lock Design
 2. **Support multiple clients to preempt/release a distributed lock, and check the owner of a distributed lock**
 
 * For preempting a distributed lock
-- If the lock doesn't exist, preempt success
-- Otherwise, preempt fail
+  - If the lock doesn't exist, preempt success
+  - Otherwise, preempt fail
 
 * For releasing a distributed lock
-- If the client owns the lock, release success
-- Otherwise, release fail
+  - If the client owns the lock, release success
+  - Otherwise, release fail
 
 * For checking a distributed lock
-- Any client can check the owner of a distributed lock
+  - Any client can check the owner of a distributed lock
 
 3. To ensure the data consistency of the system, the follower servers send all preempt/release requests to the leader server
 
@@ -28,9 +28,9 @@ Project 2: Distributed Lock Design
 * If needed, modify its map and sends a request propose to all follower servers
 
 * When a follower server receives a request propose
-- modify its local map
-- check the request is pending or not
-- if the request is pending, send an answer to the client
+  - modify its local map
+  - check the request is pending or not
+  - if the request is pending, send an answer to the client
 
 6. In this system, all clients provide preempt/release/check distributed lock interface
 
