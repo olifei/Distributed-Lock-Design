@@ -7,18 +7,18 @@ Slave::Slave(std::string self, std::string master) {
     selfID = str_hash(selfIP);
 
     if(synchronize() == false) {
-        fprintf(stderr, "Error: synchronization to %s failed!\n", masterIP);
+        fprintf(stderr, "Error: synchronization to %s failed!\n", masterIP.c_str());
     }
-    std::thread thread_client(daemon_client, CSPORT);
+    std::thread thread_client(daemon_client);
     thread_client.detach();
-    std::thread thread_master(daemon_master, MSPORT);
+    std::thread thread_master(daemon_master);
     thread_master.detach();
 };
 
 bool Slave::synchronize() {
     lockpackage synbag;
     synbag.service = 4;
-    void* buf = (void*)malloc(sizeof(1000));
+    void* buf = (void*)malloc(1000);
     int sockfd;
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
@@ -61,7 +61,7 @@ bool Slave::synchronize() {
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-	if (send(sockfd, &synbag, sizeof(synbag), 0) == -1) {
+	if (send(sockfd, &synbag, sizeof synbag, 0) == -1) {
 	    perror("send");
 	    return false;
 	}
@@ -85,7 +85,7 @@ bool Slave::reportMaster(lockpackage lockbag) {
 
 bool Slave::daemon_client() {
     int sockfd, new_fd; // Listen on socke_fd, new connection on new_fd
-    void* buf = (void*)malloc(sizeof(1000));
+    void* buf = (void*)malloc(1000);
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // Connector's address info
     socklen_t sin_size;
@@ -168,23 +168,37 @@ bool Slave::daemon_client() {
 				perror("recv");
             lockpackage* recvbag = (lockpackage*)buf;
             unsigned short recvservice = recvbag->service;
+			std::string reply;
+			size_t currentuser;
             switch(recvservice) {
                 case 1: // check
-                    size_t currentuser = checkItem(recvbag->lock);
-                    if(send(new_fd, &currentuser, sizeof(currentuser), 0) == -1)
+                    currentuser = checkItem(recvbag->lock);
+                    if(send(new_fd, &currentuser, sizeof currentuser, 0) == -1)
                         perror("send_reply_check");
                     break;
 
                 case 2: // update
                     reportMaster(*recvbag);
+					reply = "Reporting to master\n";
+					if(send(new_fd, reply.c_str(), sizeof *(reply.c_str()), 0)){
+						perror("send_wait_reply");
+					}
                     break;
 
                 case 3: // delete
                     reportMaster(*recvbag);
+					reply = "Reporting to master\n";
+					if(send(new_fd, reply.c_str(), sizeof *(reply.c_str()), 0)){
+						perror("send_wait_reply");
+					}
                     break;
 
                 default: // error
                     fprintf(stderr, "invalide service tag\n");
+					reply = "Error\n";
+					if(send(new_fd, reply.c_str(), sizeof *(reply.c_str()), 0)){
+						perror("send_wait_reply");
+					}
             }
 			close(new_fd);
 			return true;
@@ -197,7 +211,7 @@ bool Slave::daemon_client() {
 
 bool Slave::daemon_master() {
     int sockfd, new_fd; // Listen on socke_fd, new connection on new_fd
-    void* buf = (void*)malloc(sizeof(1000));
+    void* buf = (void*)malloc(1000);
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // Connector's address info
     socklen_t sin_size;
@@ -299,4 +313,11 @@ bool Slave::daemon_master() {
 	}
     free(buf);
 	return true;
+}
+
+int main (int argc, char *argv[]) {
+    if(argc != 3)
+        return 1;
+    Slave slave(argv[1], argv[2]);
+	return 0;
 }

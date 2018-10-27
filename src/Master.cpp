@@ -9,7 +9,7 @@ Master::Master(std::string self) {
 
 bool Master::daemon() {
     int sockfd, new_fd; // Listen on socke_fd, new connection on new_fd
-    void* buf = (void*)malloc(sizeof(1000));
+    void* buf = (void*)malloc(1000);
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // Connector's address info
     socklen_t sin_size;
@@ -92,33 +92,36 @@ bool Master::daemon() {
 				perror("recv");
             lockpackage* recvbag = (lockpackage*)buf;
             unsigned short recvservice = recvbag->service;
+            size_t currentuser;
             switch(recvservice) {
                 case 1: // check
-                    size_t currentuser = checkItem(recvbag->lock);
-                    if(send(new_fd, &currentuser, sizeof(currentuser), 0) == -1)
-                        perror("send_reply_check");
+                    {
+                        currentuser = checkItem(recvbag->lock);
+                        if(send(new_fd, &currentuser, sizeof currentuser, 0) == -1)
+                            perror("send_reply_check");
+                    }
                     break;
 
                 case 2: // update
-                    size_t currentuser = checkItem(recvbag->lock);
+                    currentuser = checkItem(recvbag->lock);
                     if(currentuser == 0 || currentuser == recvbag->user) { // no result in current map
                         updateItem(*recvbag);                            // or currentuser own the lock
                         flushSlave(*recvbag);
                     }
                     else
-                        fprintf(stderr, "Lock %s is owned by user %s\n",
-                                recvbag->lock, currentuser);
+                        fprintf(stderr, "Lock %s is owned by user %d\n",
+                                recvbag->lock.c_str(), currentuser);
 
                     break;
 
                 case 3: // delete
-                    size_t currentuser = checkItem(recvbag->lock);
+                    currentuser = checkItem(recvbag->lock);
                     if(currentuser == 0)
-                        fprintf(stderr, "No such lock %s\n", recvbag->lock);
+                        fprintf(stderr, "No such lock %s\n", recvbag->lock.c_str());
 
                     else if(currentuser != recvbag->user) 
-                        fprintf(stderr, "User %s can't modify lock %s, which is owned by %s\n",
-                                recvbag->user, recvbag->lock, currentuser);
+                        fprintf(stderr, "User %d can't modify lock %s, which is owned by %d\n",
+                                recvbag->user, recvbag->lock.c_str(), currentuser);
                     
                     else {
                         deleteItem(recvbag->lock);
@@ -127,7 +130,7 @@ bool Master::daemon() {
                     break;
 
                 case 4: // synchronized
-                    if(send(new_fd, &lockMap, sizeof(lockMap), 0) == -1)
+                    if(send(new_fd, &lockMap, sizeof lockMap, 0) == -1)
                         perror("synchronization");
                     break;
                     
@@ -147,4 +150,11 @@ void Master::flushSlave(lockpackage lockbag) {
     for(auto& x: slaveMap) {
         connectNode(x.second, std::to_string(MSPORT), lockbag);
     }
+}
+
+int main (int argc, char *argv[]) {
+    if(argc != 2)
+        return 1;
+    Master master(argv[1]);
+    return 0;
 }

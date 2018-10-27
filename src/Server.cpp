@@ -25,8 +25,7 @@ void Server::updateItem(lockpackage lockbag) {
 };
 
 bool Server::connectNode(std::string address, std::string port, lockpackage lockbag) {
-    int sockfd, numbytes_user, numbytes_lock;  
-	char buf[MAXDATASIZE];
+    int sockfd, numbytes_user, numbytes_lock;
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
 	char s[INET6_ADDRSTRLEN];
@@ -68,8 +67,7 @@ bool Server::connectNode(std::string address, std::string port, lockpackage lock
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-    if((numbytes_user = send(sockfd, &lockbag.user, sizeof(lockbag.user), 0) == -1) || 
-       (numbytes_lock = send(sockfd, &lockbag.lock, sizeof(lockbag.lock), 0) == -1)) {
+    if(numbytes_user = send(sockfd, &lockbag, sizeof lockbag, 0) == -1) {
            perror("send");
            return false;
     }

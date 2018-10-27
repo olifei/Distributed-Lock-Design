@@ -1,3 +1,6 @@
+#ifndef NODE_H
+#define NODE_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,6 +15,8 @@
 #include <signal.h>
 
 #define BACKLOG 10	 // How many pending connections queue will hold
+#define MSPORT 15000 // master <---> slave
+#define CSPORT 15001 // client <---> server
 
 template <typename Map, typename Address, typename Lock> class Node { // Node ADT
 private:
@@ -57,3 +62,5 @@ void *get_in_addr(struct sockaddr *sa) {
 	}
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+
+#endif

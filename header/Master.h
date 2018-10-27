@@ -1,5 +1,8 @@
+#ifndef MASTER_H
+#define MASTER_H
+
 #include "Server.h"
-#include<thread>
+#include <thread>
 #include <functional>
 
 class Master : public Server {
@@ -10,3 +13,5 @@ private:
 public:
     Master(std::string); // Own IP
 };
+
+#endif

@@ -1,3 +1,6 @@
+#ifndef SLAVE_H
+#define SLAVE_H
+
 #include "Server.h"
 #include<thread>
 #include <functional>
@@ -13,3 +16,5 @@ private:
 public:
     Slave(std::string, std::string); // Own IP, master IP
 };
+
+#endif
