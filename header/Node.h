@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <string>
 
 #define BACKLOG 10	 // How many pending connections queue will hold
 #define MSPORT 15000 // master <---> slave
@@ -46,21 +47,7 @@ struct lockpackage{ // data structure of RX/TX package
 };
 typedef struct lockpackage lockpackage;
 
-// Socker part
-void sigchld_handler(int s) {
-    (void)s; // quiet unused variable warning
-	// waitpid() might overwrite errno, so we save and restore it:
-	int saved_errno = errno;
-	while(waitpid(-1, NULL, WNOHANG) > 0);
-	errno = saved_errno;
-}
-
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa) {
-	if (sa->sa_family == AF_INET) {
-		return &(((struct sockaddr_in*)sa)->sin_addr);
-	}
-	return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
+void *get_in_addr(struct sockaddr*);
+void sigchld_handler(int);
 
 #endif
