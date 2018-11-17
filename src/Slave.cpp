@@ -9,10 +9,11 @@ Slave::Slave(std::string self, std::string master) {
     if(synchronize() == false) {
         fprintf(stderr, "Error: synchronization to %s failed!\n", masterIP.c_str());
     }
-    std::thread thread_client(daemon_client);
-    thread_client.detach();
-    std::thread thread_master(daemon_master);
-    thread_master.detach();
+    //std::thread thread_client(daemon_client);
+    //thread_client.detach();
+    //std::thread thread_master(daemon_master);
+    //thread_master.detach();
+	
 };
 
 bool Slave::synchronize() {
@@ -319,5 +320,9 @@ int main (int argc, char *argv[]) {
     if(argc != 3)
         return 1;
     Slave slave(argv[1], argv[2]);
+	std::thread thread_client(slave::daemon_client);
+    thread_client.detach();
+    std::thread thread_master(slave::daemon_master);
+    thread_master.detach();
 	return 0;
 }

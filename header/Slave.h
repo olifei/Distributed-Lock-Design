@@ -2,7 +2,7 @@
 #define SLAVE_H
 
 #include "Server.h"
-#include<thread>
+#include <thread>
 #include <functional>
 
 class Slave : public Server {
