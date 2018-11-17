@@ -320,9 +320,10 @@ int main (int argc, char *argv[]) {
     if(argc != 3)
         return 1;
     Slave slave(argv[1], argv[2]);
-	std::thread thread_client(slave::daemon_client);
-    thread_client.detach();
-    std::thread thread_master(slave::daemon_master);
-    thread_master.detach();
+	pid_t client = fork();
+	if(client != 0) {
+		slave.daemon_client();
+	}
+	slave.daemon_master();
 	return 0;
 }
