@@ -56,12 +56,19 @@ bool Client::checkLock(std::string lock) {
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-    if(numbytes_user = send(sockfd, &lockbag, sizeof lockbag, 0) == -1) {
+	std::ostringstream os;
+	boost::archive::text_oarchive oa(os);
+	oa << lockbag;
+	const std::string content = os.str();
+	const char* content_char = content.c_str();
+
+    if(numbytes_user = send(sockfd, content_char, strlen(content_char)+1, 0) == -1) {
            perror("send");
            return false;
     }
     if (recv(sockfd, buf, 1000, 0) == -1)
         perror("recv");
+	
     printf("The owner of the lock %s is %d.\n", lock.c_str(), *(size_t*)buf);
 	close(sockfd);
     return true;
@@ -114,7 +121,13 @@ void Client::updateItem(unsigned short choice, std::string lock) {
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-    if(numbytes_user = send(sockfd, &lockbag, sizeof lockbag, 0) == -1) {
+	std::ostringstream os;
+	boost::archive::text_oarchive oa(os);
+	oa << lockbag;
+	const std::string content = os.str();
+	const char* content_char = content.c_str();
+
+    if(numbytes_user = send(sockfd, content_char, strlen(content_char)+1, 0) == -1) {
            perror("send");
     }
 	close(sockfd);

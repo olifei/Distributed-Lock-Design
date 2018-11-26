@@ -90,9 +90,22 @@ bool Master::daemon() {
 			close(sockfd); // child doesn't need the listener
 			if (recv(new_fd, buf, 1000, 0) == -1)
 				perror("recv");
-            lockpackage* recvbag = (lockpackage*)buf;
+            
+            std::istringstream ss((char*)buf);
+			boost::archive::text_iarchive iarch(ss);
+			lockpackage temp;
+			iarch >> temp;
+            lockpackage* recvbag = &temp;
+            
             unsigned short recvservice = recvbag->service;
+
             size_t currentuser;
+            std::stringstream ssmap;
+            boost::archive::text_oarchive oarch(ssmap);
+            oarch << lockMap;
+            const std::string sendmess = ssmap.str();
+            const char* sendmess_char = sendmess.c_str();
+
             switch(recvservice) {
                 case 1: // check
                     {
@@ -103,7 +116,14 @@ bool Master::daemon() {
                     break;
 
                 case 2: // update
+
+                    std::cout << "User " << recvbag->user << "'s query" << std::endl;
+                    std::cout << "Required lock is " << recvbag->lock << std::endl;
+
                     currentuser = checkItem(recvbag->lock);
+                    
+                    std::cout << "Current user is " << currentuser << std::endl;
+
                     if(currentuser == 0 || currentuser == recvbag->user) { // no result in current map
                         updateItem(*recvbag);                            // or currentuser own the lock
                         flushSlave(*recvbag);
@@ -130,7 +150,8 @@ bool Master::daemon() {
                     break;
 
                 case 4: // synchronized
-                    if(send(new_fd, &lockMap, sizeof lockMap, 0) == -1)
+                
+                    if(send(new_fd, sendmess_char, strlen(sendmess_char)+1, 0) == -1)
                         perror("synchronization");
                     break;
                     

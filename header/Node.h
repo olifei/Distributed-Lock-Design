@@ -14,6 +14,12 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <string>
+#include <sstream>
+#include <iostream>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/map.hpp>
 
 #define BACKLOG 10	 // How many pending connections queue will hold
 #define MSPORT 15000 // master <---> slave
@@ -44,6 +50,13 @@ struct lockpackage{ // data structure of RX/TX package
     unsigned short service;
     size_t user;
     std::string lock;
+    
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version = 1) {
+        ar & service;
+        ar & user;
+        ar & lock;
+    }
 };
 typedef struct lockpackage lockpackage;
 

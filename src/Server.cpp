@@ -1,6 +1,9 @@
 #include "../header/Server.h"
 
 size_t Server::checkItem(std::string lock) {
+	std::cout << "From checkItem service!!!" << std::endl;
+	std::cout << "Require lock is " << lock << std::endl;
+	std::cout << lockMap[lock] << std::endl;
     size_t userID = 0;
     std::map<std::string, size_t>::iterator it;
     it = lockMap.find(lock);
@@ -22,6 +25,8 @@ void Server::deleteItem(std::string lock) {
 
 void Server::updateItem(lockpackage lockbag) {
     lockMap[lockbag.lock] = lockbag.user;
+	std::cout << "From update service!!!" << std::endl;
+	std::cout << "Owner of lock(" << lockbag.lock << ") is " << lockbag.user << std::endl;
 };
 
 bool Server::connectNode(std::string address, std::string port, lockpackage lockbag) {
@@ -67,7 +72,13 @@ bool Server::connectNode(std::string address, std::string port, lockpackage lock
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-    if(numbytes_user = send(sockfd, &lockbag, sizeof lockbag, 0) == -1) {
+	std::ostringstream os;
+	boost::archive::text_oarchive oa(os);
+	oa << lockbag;
+	const std::string content = os.str();
+	const char* content_char = content.c_str();
+
+    if(numbytes_user = send(sockfd, content_char, strlen(content_char)+1, 0) == -1) {
            perror("send");
            return false;
     }

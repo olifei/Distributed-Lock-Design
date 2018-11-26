@@ -17,7 +17,6 @@ protected:
 public:
     Server(){};
     size_t checkItem(std::string); // Lockname
-    // void addItem(lockpackage); // UID lockname
     void deleteItem(std::string); // Lockname
     void updateItem(lockpackage); // UID lockname
 };

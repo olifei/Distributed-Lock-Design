@@ -62,7 +62,13 @@ bool Slave::synchronize() {
 
 	freeaddrinfo(servinfo); // all done with this structure
 
-	if (send(sockfd, &synbag, sizeof synbag, 0) == -1) {
+	std::ostringstream os;
+	boost::archive::text_oarchive oa(os);
+	oa << synbag;
+	const std::string content = os.str();
+	const char* content_char = content.c_str();
+
+	if (send(sockfd, content_char, strlen(content_char)+1, 0) == -1) {
 	    perror("send");
 	    return false;
 	}
@@ -71,10 +77,14 @@ bool Slave::synchronize() {
 	    perror("recv");
 	    return false;
 	}
-	
-    std::map<std::string, size_t>* recvmap = (std::map<std::string, size_t>*)buf;
-    lockMap = *recvmap;
 
+	std::string contentr = (char*)buf;
+	std::istringstream is(contentr);
+	boost::archive::text_iarchive ia(is);
+    std::map<std::string, size_t> recvmap;
+	ia >> recvmap;
+
+    lockMap = recvmap;
 	close(sockfd);
 
 	return true;
@@ -167,7 +177,13 @@ bool Slave::daemon_client() {
 			close(sockfd); // child doesn't need the listener
 			if (recv(new_fd, buf, 1000, 0) == -1)
 				perror("recv");
-            lockpackage* recvbag = (lockpackage*)buf;
+
+			std::istringstream ss((char*)buf);
+			boost::archive::text_iarchive iarch(ss);
+			lockpackage temp;
+			iarch >> temp;
+            lockpackage* recvbag = &temp;
+
             unsigned short recvservice = recvbag->service;
 			std::string reply;
 			size_t currentuser;
@@ -181,7 +197,7 @@ bool Slave::daemon_client() {
                 case 2: // update
                     reportMaster(*recvbag);
 					reply = "Reporting to master\n";
-					if(send(new_fd, reply.c_str(), sizeof *(reply.c_str()), 0)){
+					if(send(new_fd, reply.c_str(), strlen(reply.c_str())+1, 0)){
 						perror("send_wait_reply");
 					}
                     break;
@@ -189,7 +205,7 @@ bool Slave::daemon_client() {
                 case 3: // delete
                     reportMaster(*recvbag);
 					reply = "Reporting to master\n";
-					if(send(new_fd, reply.c_str(), sizeof *(reply.c_str()), 0)){
+					if(send(new_fd, reply.c_str(), strlen(reply.c_str())+1, 0)){
 						perror("send_wait_reply");
 					}
                     break;
@@ -197,7 +213,7 @@ bool Slave::daemon_client() {
                 default: // error
                     fprintf(stderr, "invalide service tag\n");
 					reply = "Error\n";
-					if(send(new_fd, reply.c_str(), sizeof *(reply.c_str()), 0)){
+					if(send(new_fd, reply.c_str(), strlen(reply.c_str())+1, 0)){
 						perror("send_wait_reply");
 					}
             }
@@ -293,7 +309,13 @@ bool Slave::daemon_master() {
 			close(sockfd); // child doesn't need the listener
 			if (recv(new_fd, buf, 1000, 0) == -1)
 				perror("recv");
-            lockpackage* recvbag = (lockpackage*)buf;
+
+			std::istringstream ss((char*)buf);
+			boost::archive::text_iarchive iarch(ss);
+			lockpackage temp;
+			iarch >> temp;
+            lockpackage* recvbag = &temp;
+
             unsigned short recvservice = recvbag->service;
             switch(recvservice) {
                 case 2: // update
