@@ -15,6 +15,7 @@
 #include <signal.h>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>

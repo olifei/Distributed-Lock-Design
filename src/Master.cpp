@@ -86,8 +86,11 @@ bool Master::daemon() {
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
+        lockMap = deserializeMap();
+
 		if(!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
+            
 			if (recv(new_fd, buf, 1000, 0) == -1)
 				perror("recv");
             
@@ -110,15 +113,15 @@ bool Master::daemon() {
                 case 1: // check
                     {
                         currentuser = checkItem(recvbag->lock);
-                        if(send(new_fd, &currentuser, sizeof currentuser, 0) == -1)
+                        if(send(new_fd, &currentuser, sizeof(size_t), 0) == -1)
                             perror("send_reply_check");
                     }
                     break;
 
                 case 2: // update
 
-                    std::cout << "User " << recvbag->user << "'s query" << std::endl;
-                    std::cout << "Required lock is " << recvbag->lock << std::endl;
+                    //std::cout << "User " << recvbag->user << "'s query" << std::endl;
+                    //std::cout << "Required lock is " << recvbag->lock << std::endl;
 
                     currentuser = checkItem(recvbag->lock);
                     
@@ -162,6 +165,7 @@ bool Master::daemon() {
 			return true;
 		}
 		close(new_fd);  // parent doesn't need this
+
 	}
     free(buf);
 	return true;

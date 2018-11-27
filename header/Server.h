@@ -16,6 +16,8 @@ protected:
 
 public:
     Server(){};
+    void serializeMap(std::map<std::string, size_t>);
+    std::map<std::string, size_t> deserializeMap();
     size_t checkItem(std::string); // Lockname
     void deleteItem(std::string); // Lockname
     void updateItem(lockpackage); // UID lockname

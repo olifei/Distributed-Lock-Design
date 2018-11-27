@@ -85,6 +85,7 @@ bool Slave::synchronize() {
 	ia >> recvmap;
 
     lockMap = recvmap;
+	serializeMap(lockMap);
 	close(sockfd);
 
 	return true;

@@ -1,7 +1,7 @@
 #include "../header/Server.h"
 
 size_t Server::checkItem(std::string lock) {
-	std::cout << "From checkItem service!!!" << std::endl;
+	lockMap = deserializeMap(); //load lockMap
 	std::cout << "Require lock is " << lock << std::endl;
 	std::cout << lockMap[lock] << std::endl;
     size_t userID = 0;
@@ -20,13 +20,17 @@ void Server::addItem(lockpackage lockbag) {
 */
 
 void Server::deleteItem(std::string lock) {
+	lockMap = deserializeMap(); //load lockMap
     lockMap.erase(lock);
+	serializeMap(lockMap); // save lockMap
 };
 
 void Server::updateItem(lockpackage lockbag) {
+	lockMap = deserializeMap(); //load lockMap
     lockMap[lockbag.lock] = lockbag.user;
 	std::cout << "From update service!!!" << std::endl;
 	std::cout << "Owner of lock(" << lockbag.lock << ") is " << lockbag.user << std::endl;
+	serializeMap(lockMap); // save lockMap
 };
 
 bool Server::connectNode(std::string address, std::string port, lockpackage lockbag) {
@@ -87,3 +91,22 @@ bool Server::connectNode(std::string address, std::string port, lockpackage lock
 
 	return true;
 };
+
+void Server::serializeMap(std::map<std::string, size_t> tmp) {
+	std::ofstream mapFile("mapfile.txt");
+	boost::archive::text_oarchive oa(mapFile);
+	oa << tmp;
+	mapFile.close();
+	std::cout << "save Map" << std::endl;
+};
+
+std::map<std::string, size_t> Server::deserializeMap() {
+	std::map<std::string, size_t> tmp;
+	std::ifstream mapFile("mapfile.txt");
+	boost::archive::text_iarchive ia(mapFile);
+	std::cout << "successfully!!!" <<std::endl;
+	ia >> tmp;
+	mapFile.close();
+	std::cout << "load Map" << std::endl;
+	return tmp;
+}
