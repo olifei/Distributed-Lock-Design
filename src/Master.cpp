@@ -86,6 +86,7 @@ bool Master::daemon() {
 			get_in_addr((struct sockaddr *)&their_addr),
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
+        std::string slaveip(s);
 
         lockMap = deserializeMap();
         size_t currentuser;
@@ -150,6 +151,8 @@ bool Master::daemon() {
                     break;
 
                 case 4: // synchronized
+                    slaveList.assign(1, slaveip);
+                    saveslaveList(slaveList);
                     if(send(new_fd, sendmess_char, strlen(sendmess_char), 0) == -1)
                         perror("synchronization");
                     break;
@@ -168,12 +171,31 @@ bool Master::daemon() {
 }
 
 void Master::flushSlave(lockpackage lockbag) {
-    std::cout << "broadcast map" << std::endl;
-    connectNode("192.168.0.38", std::to_string(MSPORT), lockbag);
-    /*for(auto& x: slaveMap) {
-        std::cout << "flushing map to " << x.second << std::endl;
-        connectNode(x.second, std::to_string(MSPORT), lockbag);
-    }*/
+    //std::cout << "broadcast map" << std::endl;
+    //connectNode("192.168.0.38", std::to_string(MSPORT), lockbag);
+    slaveList = loadslaveList();
+    for(auto& x: slaveList) {
+        std::cout << "flushing map to " << x << std::endl;
+        connectNode(x, std::to_string(MSPORT), lockbag);
+    }
+}
+
+std::list<std::string> Master::loadslaveList() {
+    std::list<std::string> tmp;
+	std::ifstream listFile("slavelist.txt");
+	boost::archive::text_iarchive ia(listFile);
+	ia >> tmp;
+	listFile.close();
+	std::cout << "loading List..." << std::endl;
+	return tmp;
+}
+
+void Master::saveslaveList(std::list<std::string> tmp) {
+    std::ofstream listFile("slavelist.txt");
+	boost::archive::text_oarchive oa(listFile);
+	oa << tmp;
+	listFile.close();
+	std::cout << "saving List..." << std::endl;;
 }
 
 int main (int argc, char *argv[]) {

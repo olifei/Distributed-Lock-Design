@@ -21,6 +21,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/list.hpp>
 
 #define BACKLOG 10	 // How many pending connections queue will hold
 #define MSPORT 15000 // master <---> slave

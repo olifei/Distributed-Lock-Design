@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include <map>
+#include <list>
 #include "Node.h"
 #define MAXDATASIZE 1000
 
