@@ -1,8 +1,9 @@
 #include "../header/Server.h"
 
 size_t Server::checkItem(std::string lock) {
-	lockMap = deserializeMap(); //load lockMap
+	std::cout << "Checking the lock. ";
 	std::cout << "Require lock is " << lock << std::endl;
+	lockMap = deserializeMap(); //load lockMap
 	std::cout << lockMap[lock] << std::endl;
     size_t userID = 0;
     std::map<std::string, size_t>::iterator it;
@@ -97,16 +98,15 @@ void Server::serializeMap(std::map<std::string, size_t> tmp) {
 	boost::archive::text_oarchive oa(mapFile);
 	oa << tmp;
 	mapFile.close();
-	std::cout << "save Map" << std::endl;
+	std::cout << "saving Map..." << std::endl;
 };
 
 std::map<std::string, size_t> Server::deserializeMap() {
 	std::map<std::string, size_t> tmp;
 	std::ifstream mapFile("mapfile.txt");
 	boost::archive::text_iarchive ia(mapFile);
-	std::cout << "successfully!!!" <<std::endl;
 	ia >> tmp;
 	mapFile.close();
-	std::cout << "load Map" << std::endl;
+	std::cout << "loading Map..." << std::endl;
 	return tmp;
 }

@@ -61,38 +61,44 @@ bool Slave::synchronize() {
 	printf("slave: connecting to %s\n", s);
 
 	freeaddrinfo(servinfo); // all done with this structure
-
 	std::ostringstream os;
 	boost::archive::text_oarchive oa(os);
 	oa << synbag;
 	const std::string content = os.str();
 	const char* content_char = content.c_str();
-
 	if (send(sockfd, content_char, strlen(content_char)+1, 0) == -1) {
 	    perror("send");
 	    return false;
 	}
 
-    if (recv(sockfd, &buf, 1000, 0) == -1) {
+    if (recv(sockfd, buf, 1000, 0) == -1) {
 	    perror("recv");
 	    return false;
 	}
 
-	std::string contentr = (char*)buf;
-	std::istringstream is(contentr);
+	std::cout << "check point 1" << std::endl;
+	char* recvchar = (char*)buf;
+	std::string recvstring(recvchar);
+	std::istringstream is(recvstring);
 	boost::archive::text_iarchive ia(is);
     std::map<std::string, size_t> recvmap;
 	ia >> recvmap;
+	std::cout << "check point 2" << std::endl;
 
     lockMap = recvmap;
 	serializeMap(lockMap);
 	close(sockfd);
+	free(buf);
+	/*const int optVal = 1;
+	const socklen_t optLen = sizeof(optVal);
 
+	int rtn = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void*) &optVal, optLen);*/
+	std::cout << "sync successfully" << std::endl;
 	return true;
 };
 
 bool Slave::reportMaster(lockpackage lockbag) {
-    return connectNode(masterIP, std::to_string(MSPORT), lockbag);
+    return connectNode(masterIP, std::to_string(CSPORT), lockbag);
 }
 
 bool Slave::daemon_client() {

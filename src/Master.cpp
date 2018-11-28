@@ -4,6 +4,7 @@ Master::Master(std::string self) {
     selfIP = self;
     std::hash<std::string> str_hash;
     selfID = str_hash(selfIP);
+    serializeMap(lockMap);
     daemon();
 };
 
@@ -87,13 +88,19 @@ bool Master::daemon() {
 		printf("server: got connection from %s\n", s);
 
         lockMap = deserializeMap();
+        size_t currentuser;
+        std::ostringstream ssmap;
+        boost::archive::text_oarchive oarch(ssmap);
+        oarch << lockMap;
+        const std::string sendmess = ssmap.str();
+        const char* sendmess_char = sendmess.c_str();
 
 		if(!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
-            
+
+
 			if (recv(new_fd, buf, 1000, 0) == -1)
 				perror("recv");
-            
             std::istringstream ss((char*)buf);
 			boost::archive::text_iarchive iarch(ss);
 			lockpackage temp;
@@ -101,13 +108,6 @@ bool Master::daemon() {
             lockpackage* recvbag = &temp;
             
             unsigned short recvservice = recvbag->service;
-
-            size_t currentuser;
-            std::stringstream ssmap;
-            boost::archive::text_oarchive oarch(ssmap);
-            oarch << lockMap;
-            const std::string sendmess = ssmap.str();
-            const char* sendmess_char = sendmess.c_str();
 
             switch(recvservice) {
                 case 1: // check
@@ -119,9 +119,6 @@ bool Master::daemon() {
                     break;
 
                 case 2: // update
-
-                    //std::cout << "User " << recvbag->user << "'s query" << std::endl;
-                    //std::cout << "Required lock is " << recvbag->lock << std::endl;
 
                     currentuser = checkItem(recvbag->lock);
                     
@@ -153,8 +150,7 @@ bool Master::daemon() {
                     break;
 
                 case 4: // synchronized
-                
-                    if(send(new_fd, sendmess_char, strlen(sendmess_char)+1, 0) == -1)
+                    if(send(new_fd, sendmess_char, strlen(sendmess_char), 0) == -1)
                         perror("synchronization");
                     break;
                     
@@ -172,9 +168,12 @@ bool Master::daemon() {
 }
 
 void Master::flushSlave(lockpackage lockbag) {
-    for(auto& x: slaveMap) {
+    std::cout << "broadcast map" << std::endl;
+    connectNode("192.168.0.38", std::to_string(MSPORT), lockbag);
+    /*for(auto& x: slaveMap) {
+        std::cout << "flushing map to " << x.second << std::endl;
         connectNode(x.second, std::to_string(MSPORT), lockbag);
-    }
+    }*/
 }
 
 int main (int argc, char *argv[]) {

@@ -5,6 +5,7 @@ Client::Client(std::string self, std::string server) {
     serverIP = server;
     std::hash<std::string> str_hash;
     selfID = str_hash(selfIP);
+	std::cout << "hash is " << selfID;
 }
 
 bool Client::checkLock(std::string lock) {
