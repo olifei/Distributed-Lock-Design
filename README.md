@@ -40,3 +40,9 @@ Project 2: Distributed Lock Design
 
 8. Data structure of a client in the consensus system
 ![image](http://www.cs.sjtu.edu.cn/~wuct/bdpt2/pic/project2_pic2.png)
+
+## How-to
+./Master [Master's IP address]
+./Slave [Slave's IP address] [Master's IP address]
+./Client [Client's IP address] [Server's IP address] # server = Slave or Master
+
