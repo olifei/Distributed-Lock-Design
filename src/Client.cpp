@@ -141,7 +141,7 @@ int main (int argc, char *argv[]) {
     unsigned short service;
     std::string lock;
     while(1) {
-        std::cout << "Choice a service: check 1, update 2, delete 3" << std::endl;
+        std::cout << "Choose a service: check 1, update 2, delete 3" << std::endl;
         std::cin >> service;
         switch(service) {
             case 1:
